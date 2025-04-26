@@ -1,66 +1,118 @@
-## Foundry
+# Lisk Lottery Game
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A simple Lisk-based lottery smart contract where players can register, make guesses, and win prizes.
 
-Foundry consists of:
+## Overview
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+The Lottery Game is a blockchain-based game implemented in Solidity where:
 
-## Documentation
+1. Players register by paying a small registration fee (0.02 ETH)
+2. Players make up to 2 guesses to match a randomly generated winning number
+3. Winners share the prize pool equally
+4. The game resets after prizes are distributed
 
-https://book.getfoundry.sh/
+## Contract Features
 
-## Usage
+- Fixed registration fee (0.02 ETH)
+- Limited guess attempts per player (2)
+- Guessing range between 1-9
+- Equal prize distribution among winners
+- Game reset functionality
 
-### Build
+## Contract Structure
 
-```shell
-$ forge build
+### State Variables
+
+- `owner`: Contract deployer address
+- `winningNumber`: Randomly generated number players try to guess
+- `totalPrize`: Accumulated registration fees
+- `gameActive`: Boolean indicating if the game is currently active
+- `players`: Mapping of player addresses to their data (attempts, active status)
+- `registeredPlayers`: Array of all registered player addresses
+- `winners`: Array of addresses that guessed correctly
+- `prevWinners`: Array of previous round winners
+
+### Key Functions
+
+- `register()`: Register for the game by paying the fee
+- `guessNumber(uint8 _guess)`: Submit a guess
+- `distributePrizes()`: Send winnings to winners and reset the game
+- `getPrevWinners()`: View previous round winners
+
+## Testing
+
+The contract includes comprehensive test coverage using Forge:
+
+- Basic unit tests verifying core functionality
+- Revert tests ensuring proper error handling
+- Fuzz tests validating behavior with randomized inputs
+
+### Test Cases
+
+- Game initialization
+- Player registration
+- Guess submission
+- Multiple guesses
+- Prize distribution
+- Error handling for:
+  - Double registration
+  - Incorrect fees
+  - Unregistered players
+  - Exceeding max attempts
+  - Out-of-range guesses
+  - Distributing with no winners
+
+## Implementation Details
+
+### Random Number Generation
+
+The contract uses a simplified random number generation method:
+
+```solidity
+function _generateRandomNumber() internal view returns (uint256) {
+    return uint256(
+        keccak256(
+            abi.encodePacked(
+                block.timestamp,
+                block.prevrandao,
+                blockhash(block.number - 1)
+            )
+        )
+    ) % (MAX_GUESS - MIN_GUESS + 1) + MIN_GUESS;
+}
 ```
 
-### Test
+> **Note**: This implementation is for educational purposes. Production applications should use more secure randomness sources like Chainlink VRF.
 
-```shell
-$ forge test
+## Security Considerations
+
+- The random number generation is not cryptographically secure
+- No admin functions to handle edge cases
+- No time limits on game rounds
+
+## Development Setup
+
+### Prerequisites
+
+- [Foundry](https://getfoundry.sh/) (for testing)
+- Solidity ^0.8.13
+
+### Testing
+
+Run the test suite with:
+
+```bash
+forge test
 ```
 
-### Format
+### Deployment
 
-```shell
-$ forge fmt
-```
+Deploy to a local development network or testnet using your preferred deployment tool.
 
-### Gas Snapshots
+## Future Improvements
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- Implement more secure randomness using Chainlink VRF
+- Add time limits for game rounds
+- Create an admin panel for contract management
+- Add more sophisticated prize distribution mechanisms
+- Improve gas efficiency for larger player pools
