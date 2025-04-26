@@ -44,8 +44,6 @@ The Lottery Game is a blockchain-based game implemented in Solidity where:
 The contract includes comprehensive test coverage using Forge:
 
 - Basic unit tests verifying core functionality
-- Revert tests ensuring proper error handling
-- Fuzz tests validating behavior with randomized inputs
 
 ### Test Cases
 
